@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime as dt
+plt.style.use('ggplot')
 
 ''' **********************************************************
 GET DATA
@@ -152,14 +153,20 @@ if __name__ == '__main__':
     --- Query : will need to groupby Year, then Driver
     3) All seasons driver particpated in - single plot
     '''
-    asd = [1,2,3,4,5,1,2,3,4,5,6,7,5,4,2,2,2,3,4,5,6,1,2,3,1,4,5]
 
-    #histogram of driver countries
+    #WHY DON'T YOU WORK??????!!!!!!!
+    # dr_country = raw_drivers['nationality_driver'].value_counts().to_dict()
+    # print(type(dr_country))
+    # print(dr_country)
+    # #histogram of driver countries
     # fig = plt.figure()
     # ax = fig.add_subplot(111)
-    # ax.hist(raw_drivers['nationality_driver'].to_list())
+    # ax.bar(dr_country.keys(), dr_country.items())
     # ax.set_title('''Driver's Home Countries''')
-    # plt.show()
+    
+    dr_country = raw_drivers['nationality_driver'].value_counts().to_frame()
+    dr_country.plot(kind='bar')
+    plt.show()
 
     #print(raw_drivers['nationality_driver'].hist())
-    print(raw_drivers['nationality_driver'].value_counts())
+    
