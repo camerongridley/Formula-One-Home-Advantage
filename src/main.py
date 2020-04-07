@@ -231,26 +231,40 @@ if __name__ == '__main__':
 
 
     #Data Anaysis Visualizations
-    fig = plt.figure(figsize=(15, 6))
-    fig.add_subplot(121)
-
+    
+    
     #bar chart of avg pos(y ax) of home and away (x ax)
-    ax1 = fig.add_subplot(121)
+    fig = plt.figure(figsize=(10, 6))
+    ax1 = fig.add_subplot(111)
+    x = np.arange(2)
     values = [all_means['position_result_mean_home'].mean(), all_means['position_result_mean_away'].mean()]
     labels = ['Home', 'Away']
-    ax1.bar(labels, values, color='chartreuse')
+    ax1.bar(x, values, color=['chartreuse', 'black'])
+    plt.xticks(x, labels)
     ax1.set_title('''Driver's Average Means''')
     ax1.set_ylabel('Average Finishing Position')
-
-    
+    plt.show()
 
     #bar chart of num of drivers (y) with home advantage and without home ad (x)
+    fig = plt.figure(figsize=(10, 6))
+    ax2 = fig.add_subplot(111)
+
+    x = np.arange(2)
+    values = [all_means['position_result_mean_home'].count(), all_means['position_result_mean_away'].count()]
+    labels = ['Advantage', 'No Advantage']
+    ax2.bar(x, values, color='tan')
+    plt.xticks(x, labels)
+    ax2.set_title('Drivers Advantage Counts')
+    ax2.set_ylabel('Number of Drivers')
+    plt.show()
 
     # histogram of home/away ratio
-    ax3 = fig.add_subplot(122)
+    fig = plt.figure(figsize=(10, 6))
+    ax3 = fig.add_subplot(111)
     ax3.hist(df_driver_means['home_away_ratio'], bins=80, alpha=1)
     ax3.set_title('Ratio of Finishing Positions')
     ax3.set_xlabel('Home/Away Avgerage Ratio')
     ax3.set_ylabel('Number of Drivers')
 
+    plt.tight_layout()
     plt.show()
