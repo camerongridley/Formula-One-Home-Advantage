@@ -3,8 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import datetime as dt
 import driver
-import data_cleaner as cleaner
+from data_cleaner import DataCleaner
+import show_stats
 
+stat_printer = show_stats.ShowStats()
 plt.style.use('ggplot')
 
 ''' **********************************************************
@@ -45,16 +47,15 @@ data_list = [
     cleaned_qualify
     ]
 
-replace_val = -1
-
-#cleaner.remove_newline(df=df_all)
+num_replace_val=-1
+cleaner = DataCleaner()
 for df in data_list:
-    #cleaner.DataCleaner.remove_newline(data=df,num_replace_val=replace_val, obj_replace_val=str(replace_val) )
+    #cleaner.remove_newline(df=df,num_replace_val=-1, obj_replace_val='-1' )
     for col_name in df.columns:
         if df[col_name].dtype in ['int32', 'int64','float32', 'float64']:
-            df[col_name].replace(r'\\N',  replace_val, regex=True, inplace=True)
+            df[col_name].replace(r'\\N',  num_replace_val, regex=True, inplace=True)
         else:
-            df[col_name].replace(r'\\N',  str(replace_val), regex=True, inplace=True)
+            df[col_name].replace(r'\\N',  str(num_replace_val), regex=True, inplace=True)
 
 ################ CONVERT DTYPES #####################
 # convert cols that should be numbers
@@ -162,11 +163,11 @@ if __name__ == '__main__':
     3) All seasons driver particpated in - single plot
     '''
 
-    #WHY DON'T YOU WORK??????!!!!!!!
+    #WHY DON'T YOU WORK??????!!!!!!!  - AH-HA!have to use numbers on the x axis
+    # 
     # dr_country = cleaned_drivers['nationality_driver'].value_counts().to_dict()
     # print(type(dr_country))
     # print(dr_country)
-    # #histogram of driver countries
     # fig = plt.figure()
     # ax = fig.add_subplot(111)
     # ax.bar(dr_country.keys(), dr_country.items())
@@ -180,52 +181,76 @@ if __name__ == '__main__':
 
     ################ HOME AND AWAY RACES #####################
     # query for all 'home' races across all drivers and seasons
-    mask_remove_neg_one = df_all['position_result'] != -1
-    mask_is_home_circuit = df_all['country_cir'].isin(cleaned_drivers['country_driver'])
-    df_results_with_home_race = df_all[(mask_remove_neg_one & mask_is_home_circuit)]
+    df_finishers = df_all[df_all['position_result'] != -1]
+    mask_is_home_circuit = df_finishers['country_cir'].isin(cleaned_drivers['country_driver'])
     
+    df_results_with_home_race = df_finishers[(mask_is_home_circuit)]
+
+    # the tilde (\~) signifies "not" so ~mask_is_home_circuit reads 'not mask_is_home_circuit'
+    df_results_with_away_race = df_finishers[~mask_is_home_circuit]
+
     df_home_races = df_results_with_home_race[df_results_with_home_race['country_driver'] == df_results_with_home_race['country_cir']]
+    df_away_races = df_results_with_home_race[df_results_with_home_race['country_driver'] != df_results_with_home_race['country_cir']]
+
+    home_means = df_home_races.groupby('driverId')['position_result'].mean().reset_index()
+    away_means = df_away_races.groupby('driverId')['position_result'].mean().reset_index()
     
-    means = df_home_races.groupby('driverId')['position_result'].mean()#.rename(columns={'position_result':'position_home_mean'})
-    #cleaned_drivers['position_home_mean'] = means
-    df_driver_home_mean = pd.merge(means, cleaned_drivers, on='driverId', how='left')
-    breakpoint()
-
-
-
-
+    #merge means
+    all_means = pd.merge(home_means, away_means, on='driverId', how='left', suffixes=('_mean_home', '_mean_away'))
     
-    # # Get drivers who have a "home" race - meaning their home country is also a country which a race takes place
-    # mask_have_home_race = cleaned_drivers['country_driver'].isin(cleaned_circuits['country_cir'])
-    # df_drivers_with_home_race = cleaned_drivers.loc[mask_have_home_race, :]
+    #merge both means into drivers
+    df_driver_means = pd.merge(all_means, cleaned_drivers, on='driverId', how='left')
 
-    # #get all the results for these drivers only
-    # mask_results_have_home = df_all['driverId'].isin(df_drivers_with_home_race['driverId'])
-    # mask_negative_one = df_all['positionOrder_result'] != -1
-    # df_results_drivers_with_home_race = df_all[(mask_results_have_home & mask_negative_one)]
-    # df_results_drivers_with_home_race.to_csv('../data/df_results_drivers_with_home_race.csv')
-  
-    # #Of the drivers who have home races, split their race result into HOME and AWAY groups
-    # mask_home_results = df_results_drivers_with_home_race['country_cir'] == df_results_drivers_with_home_race['country_driver']
-    # mask_away_races = df_results_drivers_with_home_race['country_cir'] != df_results_drivers_with_home_race['country_driver']
+    stat_printer.print_basic_stats(home_means['position_result'],'home_means')
+    stat_printer.print_basic_stats(away_means['position_result'],'away_means')
+    stat_printer.print_t_test_ind(home_means['position_result'], away_means['position_result'], 'home and away means')
     
-    # # 
-    # df_drivers_with_home_race['position_home_mean'] = df_results_drivers_with_home_race.loc[mask_home_results, :].groupby('driverId')['positionOrder_result'].mean()
-    # df_drivers_with_home_race.to_csv('../data/df_drivers_with_home_race.csv')
-    # #df_drivers_with_home_race['position_mean'] = df_drivers_with_home_race[mask_home_races].groupby('driverId')[['surname_driver', 'positionOrder_result']].agg('mean')
-    
-    # df_results_drivers_with_home_race[df_results_drivers_with_home_race['driverId']==1]['positionOrder_result'].mean()
+    #ratio of home_mean to away _mean - so above 1 is better at home below 1 is better away
+    df_driver_means['home_away_ratio'] = df_driver_means['position_result_mean_home']/df_driver_means['position_result_mean_away']
 
+    '''**********************************************************
+    VISUALIZATIONS
+    **********************************************************'''
+    #Data Description Visualizations
+
+    ###pie chart of drivers with home vs no home  
+    # labels = ['Has Home Race', 'No Home Race']
+    # mask_has_home = cleaned_drivers['country_driver'].isin(cleaned_circuits['country_cir'])
+    # has_home = cleaned_drivers[mask_has_home]
+    # no_home = cleaned_drivers[~mask_has_home]
     # breakpoint()
-    
- 
-    '''
-    Create Classes
-    '''
-    # #print(cleaned_drivers['nationality_driver'].hist())
-    # drivers_ls = []
-    # for i, driver in enumerate(cleaned_drivers.iterrows()):
-    #     #drivers_ls.append(Driver())
-    #     #print(driver['driverId'])
-    #     pass
+    # sizes = [len(has_home), len(no_home)]
+    # explode = (0, 0.1)  # only "explode" the 2nd slice (i.e. 'no_home')
 
+    # fig1, ax1 = plt.subplots()
+    # ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+    #         shadow=True, startangle=90)
+    # ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+    #plt.show()
+
+
+    #Data Anaysis Visualizations
+    fig = plt.figure(figsize=(15, 6))
+    fig.add_subplot(121)
+
+    #bar chart of avg pos(y ax) of home and away (x ax)
+    ax1 = fig.add_subplot(121)
+    values = [all_means['position_result_mean_home'].mean(), all_means['position_result_mean_away'].mean()]
+    labels = ['Home', 'Away']
+    ax1.bar(labels, values, color='chartreuse')
+    ax1.set_title('''Driver's Average Means''')
+    ax1.set_ylabel('Average Finishing Position')
+
+    
+
+    #bar chart of num of drivers (y) with home advantage and without home ad (x)
+
+    # histogram of home/away ratio
+    ax3 = fig.add_subplot(122)
+    ax3.hist(df_driver_means['home_away_ratio'], bins=80, alpha=1)
+    ax3.set_title('Ratio of Finishing Positions')
+    ax3.set_xlabel('Home/Away Avgerage Ratio')
+    ax3.set_ylabel('Number of Drivers')
+
+    plt.show()
