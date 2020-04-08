@@ -229,8 +229,62 @@ class F1Home:
             ax.set_xlabel('Drivers')
             ax.set_title('Number of Drivers Per Country')
             plt.tight_layout()
-            plt.savefig('../img/driver_country_count_bar')
+            plt.savefig('../img/driver_country_count_bar.png')
             plt.show()
+
+    def show_driver_country_pretty(self):
+        # set font
+        plt.rcParams['font.family'] = 'sans-serif'
+        plt.rcParams['font.sans-serif'] = 'Helvetica'
+
+        # set the style of the axes and the text color
+        plt.rcParams['axes.edgecolor']='#333F4B'
+        plt.rcParams['axes.linewidth']=0.8
+        plt.rcParams['xtick.color']='#333F4B'
+        plt.rcParams['ytick.color']='#333F4B'
+        plt.rcParams['text.color']='#333F4B'
+
+        # create some fake data
+        #percentages = pd.Series([20, 15, 18, 8, 6, 7, 10, 2, 10, 4], 
+        #                        index=['Rent', 'Transportation', 'Bills', 'Food', 
+        #                            'Travel', 'Entertainment', 'Health', 'Other', 'Clothes', 'Phone'])
+        df = self.cleaned_drivers['country_driver'].value_counts().to_frame()#pd.DataFrame({'percentage' : percentages})
+        df = df.sort_values(by='country_driver')
+
+        # we first need a numeric placeholder for the y axis
+        my_range=list(range(1,len(df.index)+1))
+
+        fig, ax = plt.subplots(figsize=(5,7))
+
+        # create for each expense type an horizontal line that starts at x = 0 with the length 
+        # represented by the specific expense percentage value.
+        plt.hlines(y=my_range, xmin=0, xmax=df['country_driver'], color='#007ACC', alpha=0.2, linewidth=5)
+
+        # create for each expense type a dot at the level of the expense percentage value
+        plt.plot(df['country_driver'], my_range, "o", markersize=5, color='#007ACC', alpha=0.6)
+
+        # set labels
+        ax.set_xlabel('Drivers', fontsize=15, fontweight='black', color = '#333F4B')
+        ax.set_ylabel('')
+
+        # set axis
+        ax.tick_params(axis='both', which='major', labelsize=12)
+        plt.yticks(my_range, df.index)
+
+        # add an horizonal label for the y axis 
+        fig.text(-0.23, 0.96, 'Number of Drivers Per Country', fontsize=15, fontweight='black', color = '#333F4B')
+
+        # change the style of the axis spines
+        ax.spines['top'].set_color('none')
+        ax.spines['right'].set_color('none')
+        ax.spines['left'].set_smart_bounds(True)
+        ax.spines['bottom'].set_smart_bounds(True)
+
+        # set the spines position
+        ax.spines['bottom'].set_position(('axes', -0.04))
+        ax.spines['left'].set_position(('axes', 0.015))
+
+        plt.savefig('../img/driver_country_count_bar_pretty.png', dpi=300, bbox_inches='tight')
 
     def show_drivers_with_home_race_pie(self):
         #pie chart of drivers with home vs no home  
@@ -250,7 +304,7 @@ class F1Home:
         plt.savefig('../img/drivers_with_home_pie.png')
         plt.show()
     
-    def print_bar_chart(self, y_data, title, y_label, x_data, make_x_ticks=False, saveFigName=''):
+    def print_bar_chart(self, y_data, title, y_label, x_data, make_x_ticks=False, saveFigName='', color_list=[]):
         fig = plt.figure(figsize=(10, 6))
         ax = fig.add_subplot(111)
         x = x_data
@@ -258,7 +312,10 @@ class F1Home:
         if make_x_ticks:
             x = np.arange(len(x_data))
             plt.xticks(x, x_data)
-        ax.bar(x=x, height=y_data)    
+        if color_list:
+            ax.bar(x=x, height=y_data, color=color_list)
+        else:
+            ax.bar(x=x, height=y_data)
         ax.set_title(title)
         ax.set_ylabel(y_label)
         if saveFigName:
@@ -266,17 +323,17 @@ class F1Home:
         plt.tight_layout()
         plt.show()
 
-    def show_drivers_average_means(self, all_means):
+    def show_drivers_average_means(self, all_means, color_list=[]):
         #bar chart of avg pos(y ax) of home and away (x ax)
         values = [all_means['position_result_mean_home'].mean(), all_means['position_result_mean_away'].mean()]
         self.print_bar_chart(y_data=values,title='''Driver's Average Means''',y_label='Average Finishing Position',
-            x_data=['Home', 'Away'], make_x_ticks=True, saveFigName="AvgDriverMeans.png")
+            x_data=['Home', 'Away'], make_x_ticks=True, saveFigName="AvgDriverMeans.png", color_list=color_list)
     
-    def show_home_away_comp(self, all_means):
+    def show_home_away_comp(self, all_means, color_list=[]):
         #bar chart of num of drivers (y) with home advantage and without home ad (x)
         values = [all_means['position_result_mean_home'].count(), all_means['position_result_mean_away'].count()]
         self.print_bar_chart(y_data=values,title='Number of Drivers Who Have Home Advantage',y_label='Number of Drivers',
-            x_data=['Advantage', 'No Advantage'], make_x_ticks=True, saveFigName="DriverAdvantageCounts.png")
+            x_data=['Advantage', 'No Advantage'], make_x_ticks=True, saveFigName="DriverAdvantageCounts.png", color_list=color_list)
 
     def show_home_away_ratio(self, driver_means):
         # histogram of home/away ratio
@@ -330,9 +387,10 @@ if __name__ == '__main__':
     # Visualizations
     # f_one.show_driver_countries()
     # f_one.show_drivers_with_home_race_pie()
-    # f_one.show_drivers_average_means(all_result_means)
-    # f_one.show_home_away_comp(all_result_means)
+    #f_one.show_drivers_average_means(all_result_means, color_list=['grey', 'green'])
+    #f_one.show_home_away_comp(all_result_means, color_list=['pink', 'orange'])
     # f_one.show_home_away_ratio(driver_home_ratio)
+    f_one.show_driver_country_pretty()
     
     # Info printed to terminal
     f_one.show_wins_per_construtor()
