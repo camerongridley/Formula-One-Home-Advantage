@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime as dt
-import driver
+
 from data_cleaner import DataCleaner
 import show_stats
 
@@ -249,34 +249,11 @@ if __name__ == '__main__':
         plt.show()
     
     #bar chart of avg pos(y ax) of home and away (x ax)
-    
-    # fig = plt.figure(figsize=(10, 6))
-    # ax1 = fig.add_subplot(111)
-    # x = np.arange(2)
-    # values = [all_means['position_result_mean_home'].mean(), all_means['position_result_mean_away'].mean()]
-    # labels = ['Home', 'Away']
-    # ax1.bar(x, values, color=['chartreuse', 'black'])
-    # plt.xticks(x, labels)
-    # ax1.set_title('''Driver's Average Means''')
-    # ax1.set_ylabel('Average Finishing Position')
-    # plt.show()
-    
     values = [all_means['position_result_mean_home'].mean(), all_means['position_result_mean_away'].mean()]
     print_bart_chart(y_data=values,title='''Driver's Average Means''',y_label='Average Finishing Position',
         x_data=['Home', 'Away'], make_x_ticks=True, saveFigName="AvgDriverMeans.png")
 
     #bar chart of num of drivers (y) with home advantage and without home ad (x)
-    # fig = plt.figure(figsize=(10, 6))
-    # ax2 = fig.add_subplot(111)
-
-    # x = np.arange(2)
-    # values = [all_means['position_result_mean_home'].count(), all_means['position_result_mean_away'].count()]
-    # labels = ['Advantage', 'No Advantage']
-    # ax2.bar(x, values, color='tan')
-    # plt.xticks(x, labels)
-    # ax2.set_title('Drivers Advantage Counts')
-    # ax2.set_ylabel('Number of Drivers')
-    # plt.show()
     values = [all_means['position_result_mean_home'].count(), all_means['position_result_mean_away'].count()]
     print_bart_chart(y_data=values,title='Drivers Advantage Counts',y_label='Number of Drivers',
         x_data=['Advantage', 'No Advantage'], make_x_ticks=True, saveFigName="DriverAdvantageCounts.png")
@@ -291,3 +268,28 @@ if __name__ == '__main__':
     # plt.tight_layout()
     # 
     # plt.show()
+
+    '''Delete me when ready!
+    # fig = plt.figure(figsize=(10, 6))
+    # ax2 = fig.add_subplot(111)
+
+    # x = np.arange(2)
+    # values = [all_means['position_result_mean_home'].count(), all_means['position_result_mean_away'].count()]
+    # labels = ['Advantage', 'No Advantage']
+    # ax2.bar(x, values, color='tan')
+    # plt.xticks(x, labels)
+    # ax2.set_title('Drivers Advantage Counts')
+    # ax2.set_ylabel('Number of Drivers')
+    # plt.show()
+
+    # fig = plt.figure(figsize=(10, 6))
+    # ax1 = fig.add_subplot(111)
+    # x = np.arange(2)
+    # values = [all_means['position_result_mean_home'].mean(), all_means['position_result_mean_away'].mean()]
+    # labels = ['Home', 'Away']
+    # ax1.bar(x, values, color=['chartreuse', 'black'])
+    # plt.xticks(x, labels)
+    # ax1.set_title('Drivers Average Means')
+    # ax1.set_ylabel('Average Finishing Position')
+    # plt.show()
+    '''

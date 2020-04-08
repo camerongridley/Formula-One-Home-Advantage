@@ -9,11 +9,37 @@ Total drivers: 847
 Drivers with home circuit: 798
 without:
 
+valid = driver finished the race
+
 valid results with home circuit:
 valid results without home circuit:
 
 <h1>Analysis and Results</h1>
 <h3>For All Drivers Across All Seasons</h3>
+Formulate your two, mutually exclusive hypotheses.
+
+a. Null, Alternate
+
+\2. Choose a level of significance.
+
+a. alpha
+
+\3. Choose a statistical test and find the test statistic.
+
+a. t or Z, usually
+
+\4. Compute the probability of your results* assuming the null hypothesis is
+
+True.
+
+a. p-value
+
+\5. Compare p and alpha to draw a conclusion:
+
+a. p <= alpha, Reject Null in favor of Alternate
+
+b. p > alpha, Fail to reject Null
+
 Mean of home_means 10.0
 Variance of home_means 21.0
 Standard Deviation of home_means 10.0

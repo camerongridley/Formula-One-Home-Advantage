@@ -54,3 +54,6 @@ class DataCleaner:
         #         df[col_name].replace(r'\\N',  num_replace_val, regex=True, inplace=True)
         #     else:
         #         df[col_name].replace(r'\\N',  str(obj_replace_val), regex=True, inplace=True)
+
+    if __name__ == '__main__':
+        x = DataCleaner()
