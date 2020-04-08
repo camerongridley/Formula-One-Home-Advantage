@@ -7,7 +7,7 @@ from data_cleaner import DataCleaner
 import show_stats
 
 stat_printer = show_stats.ShowStats()
-plt.style.use('ggplot')
+plt.style.use('seaborn-pastel')
 
 ''' **********************************************************
 GET DATA
@@ -232,39 +232,62 @@ if __name__ == '__main__':
 
     #Data Anaysis Visualizations
     
+    def print_bart_chart(y_data, title, y_label, x_data, make_x_ticks=False, saveFigName=''):
+        fig = plt.figure(figsize=(10, 6))
+        ax = fig.add_subplot(111)
+        x = x_data
+        #breakpoint()
+        if make_x_ticks:
+            x = np.arange(len(x_data))
+            plt.xticks(x, x_data)
+        ax.bar(x=x, height=y_data)    
+        ax.set_title(title)
+        ax.set_ylabel(y_label)
+        if saveFigName:
+            plt.savefig(f'../img/{saveFigName}')
+        plt.tight_layout()
+        plt.show()
     
     #bar chart of avg pos(y ax) of home and away (x ax)
-    fig = plt.figure(figsize=(10, 6))
-    ax1 = fig.add_subplot(111)
-    x = np.arange(2)
+    
+    # fig = plt.figure(figsize=(10, 6))
+    # ax1 = fig.add_subplot(111)
+    # x = np.arange(2)
+    # values = [all_means['position_result_mean_home'].mean(), all_means['position_result_mean_away'].mean()]
+    # labels = ['Home', 'Away']
+    # ax1.bar(x, values, color=['chartreuse', 'black'])
+    # plt.xticks(x, labels)
+    # ax1.set_title('''Driver's Average Means''')
+    # ax1.set_ylabel('Average Finishing Position')
+    # plt.show()
+    
     values = [all_means['position_result_mean_home'].mean(), all_means['position_result_mean_away'].mean()]
-    labels = ['Home', 'Away']
-    ax1.bar(x, values, color=['chartreuse', 'black'])
-    plt.xticks(x, labels)
-    ax1.set_title('''Driver's Average Means''')
-    ax1.set_ylabel('Average Finishing Position')
-    plt.show()
+    print_bart_chart(y_data=values,title='''Driver's Average Means''',y_label='Average Finishing Position',
+        x_data=['Home', 'Away'], make_x_ticks=True, saveFigName="AvgDriverMeans.png")
 
     #bar chart of num of drivers (y) with home advantage and without home ad (x)
-    fig = plt.figure(figsize=(10, 6))
-    ax2 = fig.add_subplot(111)
+    # fig = plt.figure(figsize=(10, 6))
+    # ax2 = fig.add_subplot(111)
 
-    x = np.arange(2)
+    # x = np.arange(2)
+    # values = [all_means['position_result_mean_home'].count(), all_means['position_result_mean_away'].count()]
+    # labels = ['Advantage', 'No Advantage']
+    # ax2.bar(x, values, color='tan')
+    # plt.xticks(x, labels)
+    # ax2.set_title('Drivers Advantage Counts')
+    # ax2.set_ylabel('Number of Drivers')
+    # plt.show()
     values = [all_means['position_result_mean_home'].count(), all_means['position_result_mean_away'].count()]
-    labels = ['Advantage', 'No Advantage']
-    ax2.bar(x, values, color='tan')
-    plt.xticks(x, labels)
-    ax2.set_title('Drivers Advantage Counts')
-    ax2.set_ylabel('Number of Drivers')
-    plt.show()
+    print_bart_chart(y_data=values,title='Drivers Advantage Counts',y_label='Number of Drivers',
+        x_data=['Advantage', 'No Advantage'], make_x_ticks=True, saveFigName="DriverAdvantageCounts.png")
 
-    # histogram of home/away ratio
-    fig = plt.figure(figsize=(10, 6))
-    ax3 = fig.add_subplot(111)
-    ax3.hist(df_driver_means['home_away_ratio'], bins=80, alpha=1)
-    ax3.set_title('Ratio of Finishing Positions')
-    ax3.set_xlabel('Home/Away Avgerage Ratio')
-    ax3.set_ylabel('Number of Drivers')
-
-    plt.tight_layout()
-    plt.show()
+    # # histogram of home/away ratio
+    # fig = plt.figure(figsize=(10, 6))
+    # ax3 = fig.add_subplot(111)
+    # ax3.hist(df_driver_means['home_away_ratio'], bins=80, alpha=1)
+    # ax3.set_title('Ratio of Finishing Positions')
+    # ax3.set_xlabel('Home/Away Avgerage Ratio')
+    # ax3.set_ylabel('Number of Drivers')
+    # plt.tight_layout()
+    # 
+    # plt.show()
