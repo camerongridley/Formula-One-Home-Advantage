@@ -187,7 +187,7 @@ class F1Home:
             # the tilde (\~) signifies "not" so ~mask_driver_has_home_circuit reads 'not mask_driver_has_home_circuit'
             df_results_driver_no_home_race = df_valid_results[~mask_driver_has_home_circuit]
             # num_drivers_without_home_race = df_results_driver_no_home_race.groupby('driverId').unique().count()
-            # breakpoint()
+
             df_home_races = df_results_of_drivers_who_have_home_race[df_results_of_drivers_who_have_home_race['country_driver'] == df_results_of_drivers_who_have_home_race['country_cir']]
             df_away_races = df_results_of_drivers_who_have_home_race[df_results_of_drivers_who_have_home_race['country_driver'] != df_results_of_drivers_who_have_home_race['country_cir']]
 
@@ -209,7 +209,7 @@ class F1Home:
 
             return all_means, df_driver_means
 
-    def show_driver_country_vis(self):
+    def show_driver_country_vertical(self):
         dr_country = self.cleaned_drivers['nationality_driver'].value_counts().to_frame()
         dr_country.plot(kind='bar')
         plt.tight_layout()
@@ -219,18 +219,18 @@ class F1Home:
     def show_driver_countries(self):
             fig, ax = plt.subplots()
             country_names_dict = self.cleaned_drivers['country_driver'].value_counts().to_dict()
-            breakpoint()
+            countries = list(country_names_dict.values())
+            y_pos = np.arange(len(country_names_dict))
 
-            #y_pos
-            #WHY DON'T YOU WORK??????!!!!!!!  - AH-HA!have to use numbers on the x axis
-            
-            # driver_countries = self.cleaned_drivers['nationality_driver'].value_counts().to_dict()
-            # print(type(driver_countries))
-            # print(driver_countries)
-            # fig = plt.figure()
-            # ax = fig.add_subplot(111)
-            # ax.bar(driver_countries.keys(), driver_countries.items())
-            # ax.set_title('''Driver's Home Countries''')
+            ax.barh(y_pos, countries, align='center')
+            ax.set_yticks((y_pos))
+            ax.set_yticklabels(country_names_dict.keys())
+            ax.invert_yaxis() # labels read top-to-bottom
+            ax.set_xlabel('Drivers')
+            ax.set_title('Number of Drivers Per Country')
+            plt.tight_layout()
+            plt.savefig('../img/driver_country_count_bar')
+            plt.show()
 
     def show_drivers_with_home_race_pie(self):
         #pie chart of drivers with home vs no home  
@@ -238,7 +238,6 @@ class F1Home:
         mask_has_home = self.cleaned_drivers['country_driver'].isin(self.cleaned_circuits['country_cir'])
         has_home = self.cleaned_drivers[mask_has_home]
         no_home = self.cleaned_drivers[~mask_has_home]
-        breakpoint()
         sizes = [len(has_home), len(no_home)]
         explode = (0, 0.1)  # only "explode" the 2nd slice (i.e. 'no_home')
 
@@ -246,15 +245,16 @@ class F1Home:
         ax.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
                 shadow=True, startangle=90)
         ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-        ax.title('''Driver's With Home Race''')
+        ax.set_title('''Driver's With Home Race''')
 
+        plt.savefig('../img/drivers_with_home_pie.png')
         plt.show()
     
     def print_bar_chart(self, y_data, title, y_label, x_data, make_x_ticks=False, saveFigName=''):
         fig = plt.figure(figsize=(10, 6))
         ax = fig.add_subplot(111)
         x = x_data
-        #breakpoint()
+
         if make_x_ticks:
             x = np.arange(len(x_data))
             plt.xticks(x, x_data)
@@ -290,6 +290,18 @@ class F1Home:
         
         plt.show()
 
+    def show_wins_per_construtor(self):
+        #create mask and groupby constructor name and specify colums to inlude in final dataframe
+        mask_wins = self.df_all['position_result'] == 1
+        wins_by_constructor = self.df_all[(mask_wins)].groupby(['name_constr']).sum()[['position_result', 'points_result']]
+        ## sort 
+        wins_by_constructor.sort_values(by=['position_result'], ascending=False, inplace=True)
+        print(wins_by_constructor.head(10))
+
+        # all in one line
+        #wins_by_constructor = self.df_all[(mask_wins)].groupby(['name_constr']).sum()[['position_result', 'points_result']].sort_values(by=['points_result'], ascending=False)
+
+
         
     
 if __name__ == '__main__':
@@ -301,7 +313,7 @@ if __name__ == '__main__':
     raw_constructor_path = '../data/constructors.csv'
     raw_status_path = '../data/status.csv'
 
-    results_cols = ['resultId','raceId','driverId', 'constructorId','position','statusId']
+    results_cols = ['resultId','raceId','driverId', 'constructorId','position','statusId', 'points']
     races_cols = ['raceId','year','round','circuitId','name','date','time']
     drivers_cols = ['driverId','driverRef','number','code','forename','surname','dob','nationality']
     circuits_cols = ['circuitId','name','location','country','lat','lng','alt']
@@ -315,14 +327,15 @@ if __name__ == '__main__':
 
     all_result_means, driver_home_ratio = f_one.calculate_home_advantage()
 
-    #f_one.show_driver_country_vis()
-    #f_one.show_drivers_with_home_race_pie()
-    #f_one.show_drivers_average_means(all_result_means)
-    #f_one.show_home_away_comp(all_result_means)
-    f_one.show_home_away_ratio(driver_home_ratio)
-    #f_one.show_driver_countries()
-
+    # Visualizations
+    # f_one.show_driver_countries()
+    # f_one.show_drivers_with_home_race_pie()
+    # f_one.show_drivers_average_means(all_result_means)
+    # f_one.show_home_away_comp(all_result_means)
+    # f_one.show_home_away_ratio(driver_home_ratio)
     
+    # Info printed to terminal
+    f_one.show_wins_per_construtor()
 
     
 
@@ -333,16 +346,7 @@ if __name__ == '__main__':
     # ********************************************************** '''
     # #REMINDER : mask - grouby - agg - col selection - sort
 
-    # #***Number of wins per contructor
-    # # #create mask and groupby constructor name and specify colums to inlude in final dataframe
-    # # mask_wins = df_all['positionOrder_result'] == 1
-    # # wins_by_constructor = df_all[(mask_wins)].groupby(['name_constr']).sum()[['positionOrder_result', 'points_result']]
-    # # ## sort 
-    # # wins_by_constructor.sort_values(by=['positionOrder_result'], ascending=False, inplace=True)
-    # # print(wins_by_constructor.head(10))
-    # # # all in one line
-    # # wins_by_constructor = df_all[(mask_wins)].groupby(['name_constr']).sum()[['positionOrder_result', 'points_result']].sort_values(by=['points_result'], ascending=False)
-
+    
     # '''
     # HYPOTH 1 - Comparing 'home' wins to 'away' wins
     # How to organize this data? Have to exclude drivers who don't have a race in their home country.
