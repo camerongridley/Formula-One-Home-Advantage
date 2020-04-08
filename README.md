@@ -16,6 +16,8 @@ valid = driver finished the race
 valid results with home circuit:
 valid results without home circuit:
 
+![drivers_with_home_pie](img/drivers_with_home_pie.png)
+
 <h1>Analysis and Results</h1>
 <h3>For All Drivers Across All Seasons</h3>
 Formulate your two, mutually exclusive hypotheses.
