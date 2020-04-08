@@ -16,6 +16,12 @@ valid = driver finished the race
 valid results with home circuit:
 valid results without home circuit:
 
+![driver_country_count_bar](img/driver_country_count_bar.png)
+
+
+
+
+
 ![drivers_with_home_pie](img/drivers_with_home_pie.png)
 
 <h1>Analysis and Results</h1>
@@ -51,6 +57,16 @@ Mean of away_means 9.0
 Variance of away_means 11.0
 Standard Deviation of away_means 9.0
 t-test (ind) for home and away means: p=0.052, t_score=1.942
+
+
+
+![AvgDriverMeans](img/AvgDriverMeans.png)
+
+![DriverAdvantageCounts](img/DriverAdvantageCounts.png)
+
+
+
+![all_results_home_away_ration](img/all_results_home_away_ration.png)
 
 
 <h2>Study Limitations</h2>
