@@ -171,11 +171,12 @@ class F1Home:
 
     def calculate_home_advantage(self, df):
         '''
-        Parameters
+        Parameters:
         -------
         df - Pandas DataFrame
             All race results driver on which to calculate the home advantage
-        Returns
+            REQUIRED COLS: driverId, position_result, country_cir, country_driver
+        Returns:
         -------
         df_driver_means_years_combined : Pandas DataFrame
             For combined years in the dataframe provided lists driver's basic info as well as average_home_means, average_away_means and home_to_away_ratio
@@ -186,7 +187,7 @@ class F1Home:
         df_driver_means_by_year_by_driver : Pandas DataFrame
             average_home_means, average_away_means and home_to_away_ratio results by year by driver
         '''
-
+        breakpoint
         # select results for only those who finished the race
         df_valid_results = df[df['position_result'] != -1]
         
@@ -224,8 +225,7 @@ class F1Home:
         
         #ratio of home_mean to away _mean for combined years - so above 1 is better at home below 1 is better away
         df_driver_means_years_combined['home_away_ratio'] = df_driver_means_years_combined['position_result_mean_home']/df_driver_means_years_combined['position_result_mean_away']
-        
-        breakpoint()
+
         #calculate means per season
         ########################################################################
         df_home_means_by_year_by_driver = df_home_races.groupby(['year_race', 'driverId'])['position_result'].mean().reset_index()
@@ -244,57 +244,67 @@ class F1Home:
         
         #ratio of home_mean to away _mean for combined years - so above 1 is better at home below 1 is better away
         df_driver_means_by_year_by_driver['home_away_ratio'] = df_driver_means_by_year_by_driver['position_result_mean_home']/df_driver_means_by_year_by_driver['position_result_mean_away']
-        #3333333333333333333333333333333333333333333333333333333333333333333333
+        ##################################################################
 
         return df_driver_means_years_combined, t_score_years_combined, p_val_years_combined, df_driver_means_by_year_by_driver
 
-    def filter_results_by_year(self, start_year, end_year):
+    def filter_results_by_year(self, start_year, end_year, include_all_driver_years=True):
         '''
-        Returns all rows from cleaned master DataFrame for specified year interval
+        Create DataFrame that has ALL results for drivers who competed in the years supplied in the parameters
+        If include_all_driver_years is True include results that are in years outside supplied range.
+        So if the start_year is 2015, the results for Lewis Hamilton would include all of his races since he started in 2007.
+        Jules Bianchi, who raced in 2014 but tragically died in a race that year, would not be included in the results.
         '''
+        #find all driverIds for races in the year interval
         mask_time_interval = (self.df_all['year_race'] >= start_year) & (self.df_all['year_race'] <= end_year)
+        breakpoint()
+        driver_id_list = self.df_all[mask_time_interval]['driverId'].tolist()
 
-        return self.df_all[mask_time_interval]
+        #with that list of driverIds, do a isin(driverIDList) to get all results to be used for calculation
+        mask_driver_ids = self.df_all['driverId'].isin(driver_id_list)
+        df_filtered_results = self.df_all[mask_driver_ids]
+        
+        return df_filtered_results
 
-    def calc_home_adv_for_all_data(self):
+    def end_user_home_adv_for_all_data(self):
         start_year = self.cleaned_races['year_race'].min()
         end_year = self.cleaned_races['year_race'].max()
 
         df = self.filter_results_by_year(start_year, end_year)
         return self.calculate_home_advantage(df)
 
-    def calculate_driver_ratios_by_season(self, driver_id_list, start_year, end_year):
+    def end_user_driver_ratios_by_season(self, start_year, end_year):
         '''
-        Defaults to include the data for all years and all drivers
         Attributes
         ----------
-        driver_id_list : list of ints
-            Driver ids to include in search
+        
         start_year : int
-            Minimum year value for query
+            Minimum year in which a driver competed
         end_year : int
-            Maximum year value for query
+            Maximum year in which a driver competed
+        driver_id_list : list of ints
+                    Driver ids to include in search
+                    defaults to only Lewis Hamilton, driverId=1
 
         Returns
         -------
-        t_test_results - dictionary
-            key: season year
-            value: tuple of (t-score, p-val) of that season year
+        df_driver_means_years_combined : Pandas DataFrame
+
+        t_score_years_combined : float
+
+        p_val_years_combined : float
+
+        df_driver_means_by_year_by_driver : Pandas DataFrame
         '''
+        
         if start_year < self.cleaned_races['year_race'].min():
             raise Exception("The starting year chosen is before the earliest data that exists.")
 
         if end_year > self.cleaned_races['year_race'].max():
             raise Exception("The ending year chosen is before the latest data that exists.")
 
-        #seasons_means_for_drivers = []
-
         # filter for for specified time interval
-        df_filtered_seasons_results = self.filter_results_by_year(start_year, end_year)
-        
-        # filter for the specified drivers
-        mask_driver_list = df_filtered_seasons_results['driverId'].isin(driver_id_list)
-        df_filtered_seasons_results[mask_driver_list]
+        df_filtered_seasons_results = self.filter_results_by_year(start_year, end_year, include_all_driver_years=True)
 
         # for each season year, get home/away result means and ratio
         # since we add 1 to the year in the call to filter_results_by_year, don't add 1 when setting the range for the loop
@@ -304,8 +314,23 @@ class F1Home:
         # get results for the time and driver conditions
         df_driver_means_years_combined, t_score_years_combined, p_val_years_combined, df_driver_means_by_year_by_driver = self.calculate_home_advantage(df_filtered_seasons_results)
 
-        # 
-        
+        return df_driver_means_years_combined, t_score_years_combined, p_val_years_combined, df_driver_means_by_year_by_driver
+
+    def end_user_all_most_wins(self):
+        mask_wins = self.df_all['position_result'] == 1
+        df_most_wins = self.df_all[mask_wins].groupby('driverId').sum()['position_result'].sort_values(ascending=False).head(10)
+
+        breakpoint()
+
+    def end_user_most_recent_grid(self):
+        #get most recent year
+        most_recent_year = self.cleaned_races['year_race'].max()
+
+        #get all results for most recent year
+        df_recent_year_results = self.df_all[self.df_all['year_race'] == most_recent_year]
+
+        self.end_user_driver_ratios_by_season
+
 
     def show_driver_country_vertical(self):
         dr_country = self.cleaned_drivers['nationality_driver'].value_counts().to_frame()
@@ -480,22 +505,23 @@ if __name__ == '__main__':
     f_one.apply_data_cleaning()
     f_one.save_csvs(False)
 
-    df_driver_means_years_combined, t_score, p_val, df_driver_means_by_year_by_driver = f_one.calc_home_adv_for_all_data()
+    df_driver_means_years_combined, t_score, p_val, df_driver_means_by_year_by_driver = f_one.end_user_home_adv_for_all_data()
 
     plt.style.use('seaborn-deep')
     # Visualizations
     color_list=['grey', 'green']
-    f_one.show_driver_countries()
-    f_one.show_drivers_with_home_race_pie()
-    f_one.show_drivers_average_means(df_driver_means_years_combined)
-    f_one.show_home_away_comp(df_driver_means_years_combined)
-    f_one.show_home_away_ratio(df_driver_means_years_combined)
-    f_one.show_driver_country_pretty()
-    plt.show()
+    # f_one.show_driver_countries()
+    # f_one.show_drivers_with_home_race_pie()
+    # f_one.show_drivers_average_means(df_driver_means_years_combined)
+    # f_one.show_home_away_comp(df_driver_means_years_combined)
+    # f_one.show_home_away_ratio(df_driver_means_years_combined)
+    # f_one.show_driver_country_pretty()
+    # plt.show()
 
     # Info printed to terminal
     f_one.print_wins_per_construtor()
 
+    #f_one.end_user_all_most_wins()
     
 
 
