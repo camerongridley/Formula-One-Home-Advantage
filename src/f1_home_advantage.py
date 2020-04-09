@@ -7,7 +7,6 @@ from data_cleaner import DataCleaner
 import show_stats
 
 stat_printer = show_stats.ShowStats()
-plt.style.use('seaborn-pastel')
 
 class F1Home:
     
@@ -214,7 +213,7 @@ class F1Home:
         dr_country.plot(kind='bar')
         plt.tight_layout()
         plt.savefig('../img/driver_country_count_bar.png')
-        plt.show()
+        #plt.show()
 
     def show_driver_countries(self):
             fig, ax = plt.subplots()
@@ -230,7 +229,7 @@ class F1Home:
             ax.set_title('Number of Drivers Per Country')
             plt.tight_layout()
             plt.savefig('../img/driver_country_count_bar.png')
-            plt.show()
+            #plt.show()
 
     def show_driver_country_pretty(self):
         # set font
@@ -302,7 +301,7 @@ class F1Home:
         ax.set_title('''Driver's With Home Race''')
 
         plt.savefig('../img/drivers_with_home_pie.png')
-        plt.show()
+        #plt.show()
     
     def print_bar_chart(self, y_data, title, y_label, x_data, make_x_ticks=False, saveFigName='', color_list=[]):
         fig = plt.figure(figsize=(10, 6))
@@ -321,7 +320,7 @@ class F1Home:
         if saveFigName:
             plt.savefig(f'../img/{saveFigName}')
         plt.tight_layout()
-        plt.show()
+        #plt.show()
 
     def show_drivers_average_means(self, all_means, color_list=[]):
         #bar chart of avg pos(y ax) of home and away (x ax)
@@ -345,7 +344,7 @@ class F1Home:
         ax.set_ylabel('Number of Drivers')
         plt.savefig(f'../img/all_results_home_away_ration.png')
         
-        plt.show()
+        #plt.show()
 
     def show_wins_per_construtor(self):
         #create mask and groupby constructor name and specify colums to inlude in final dataframe
@@ -384,14 +383,17 @@ if __name__ == '__main__':
 
     all_result_means, driver_home_ratio = f_one.calculate_home_advantage()
 
+    plt.style.use('seaborn-deep')
     # Visualizations
-    # f_one.show_driver_countries()
-    # f_one.show_drivers_with_home_race_pie()
-    #f_one.show_drivers_average_means(all_result_means, color_list=['grey', 'green'])
-    #f_one.show_home_away_comp(all_result_means, color_list=['pink', 'orange'])
-    # f_one.show_home_away_ratio(driver_home_ratio)
-    f_one.show_driver_country_pretty()
-    
+    color_list=['grey', 'green']
+    f_one.show_driver_countries()
+    f_one.show_drivers_with_home_race_pie()
+    f_one.show_drivers_average_means(all_result_means)
+    f_one.show_home_away_comp(all_result_means)
+    f_one.show_home_away_ratio(driver_home_ratio)
+    #f_one.show_driver_country_pretty()
+    plt.show()
+
     # Info printed to terminal
     f_one.show_wins_per_construtor()
 
