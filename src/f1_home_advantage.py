@@ -65,6 +65,13 @@ class F1Home:
         #self.cleaned_qualify = self.raw_qualify[]
         self.update_cleaned_df_list()
 
+    def handle_nulls(self):
+            # With this data '\N' values were used to stand for null
+            replace_val=-1
+            
+            for df in self.cleaned_data_frames:
+                self.remove_newline(df=df,num_replace_val=replace_val, obj_replace_val=str(replace_val))
+
     def remove_newline(self, df, num_replace_val=-1, obj_replace_val='None'):
         """
         Replaces, INPLACE, \\N and \\n characters in a dataframe with the specified replacement values.
@@ -77,11 +84,6 @@ class F1Home:
             Number to replace newline with. Defaults to -1. 
         obj_replace_val : string
             String to replace newline with in oject dtype col
-
-        Returns
-        -------
-        int
-            Description of return value
         """
         
         for col_name in df.columns:
@@ -89,13 +91,6 @@ class F1Home:
                 df[col_name].replace(r'\\N',  num_replace_val, regex=True, inplace=True)
             else:
                 df[col_name].replace(r'\\N',  obj_replace_val, regex=True, inplace=True)
-
-    def handle_nulls(self):
-        # With this data '\N' values were used to stand for null
-        replace_val=-1
-        
-        for df in self.cleaned_data_frames:
-            self.remove_newline(df=df,num_replace_val=replace_val, obj_replace_val=str(replace_val))
 
     def convert_col_dtypes(self):
         # convert cols that should be numbers
@@ -164,7 +159,6 @@ class F1Home:
         # print(f'mg_res_dr_rac_cir_const: {mg_res_dr_rac_cir_const.shape}')
         # print(f'df_all: {self.df_all.shape}')
 
-
     def save_csvs(self, save):
         if save:
             self.cleaned_results.to_csv('../output/cleaned_results.csv')
@@ -175,35 +169,28 @@ class F1Home:
             self.cleaned_status.to_csv('../output/cleaned_status.csv')
             self.df_all.to_csv('../output/all.csv')
 
-    def calculate_home_advantage(self, start_year=-1, end_year=-1):
+    def calculate_home_advantage(self, df):
         '''
-        Defaults to include the data for all years
-
+        Parameters
+        -------
+        df - Pandas DataFrame
+            All race results driver on which to calculate the home advantage
         Returns
         -------
-        all_means : Pandas DataFrame
-            DataFrame of just the home race result means and away race result means for all race results in specified time interval
         df_driver_means : Pandas DataFrame
-            DataFrame that includes driver information for all of the means calculated. Maps the information from all_means to driver info. 
+            For each driver, lists thier basic info as well as average_home_means, average_away_means and home_to_away_ratio
         t_score : float
             t-score of t-test comparing home_results and away_results
         p_val : float
             p value for the t-test
         '''
-        
-        if start_year == -1:
-            start_year = self.cleaned_races['year_race'].min()
-        if end_year == -1:
-            end_year = self.cleaned_races['year_race'].max()
 
-        
         # select results for only those who finished the race
-        df_valid_results = self.df_all[self.df_all['position_result'] != -1]
+        df_valid_results = df[df['position_result'] != -1]
         
         #if a driver doesn't have a 'home race' then we can't use their results
         mask_driver_has_home_circuit = df_valid_results['country_cir'].isin(self.cleaned_drivers['country_driver'])
-        mask_time_interval = (df_valid_results['year_race'] >= start_year) & (df_valid_results['year_race'] <= end_year)
-        df_results_of_drivers_who_have_home_race = df_valid_results[mask_driver_has_home_circuit & mask_time_interval]
+        df_results_of_drivers_who_have_home_race = df_valid_results[mask_driver_has_home_circuit]
 
         year_min = df_results_of_drivers_who_have_home_race['year_race'].min()
         year_max = df_results_of_drivers_who_have_home_race['year_race'].max()
@@ -213,27 +200,88 @@ class F1Home:
 
         # the tilde (\~) signifies "not" so ~mask_driver_has_home_circuit reads 'not mask_driver_has_home_circuit'
         df_results_driver_no_home_race = df_valid_results[~mask_driver_has_home_circuit]
-        # num_drivers_without_home_race = df_results_driver_no_home_race.groupby('driverId').unique().count()
 
         df_home_races = df_results_of_drivers_who_have_home_race[df_results_of_drivers_who_have_home_race['country_driver'] == df_results_of_drivers_who_have_home_race['country_cir']]
         df_away_races = df_results_of_drivers_who_have_home_race[df_results_of_drivers_who_have_home_race['country_driver'] != df_results_of_drivers_who_have_home_race['country_cir']]
 
-        home_means = df_home_races.groupby('driverId')['position_result'].mean().reset_index()
-        away_means = df_away_races.groupby('driverId')['position_result'].mean().reset_index()
+        # calculate means for the entire group across all years/seasons
+        df_home_means_years_combined = df_home_races.groupby('driverId')['position_result'].mean().reset_index()
+        df_away_means_years_combined = df_away_races.groupby('driverId')['position_result'].mean().reset_index()
         
         #merge means
-        all_means = pd.merge(home_means, away_means, on='driverId', how='left', suffixes=('_mean_home', '_mean_away'))
+        df_all_means_for_years_combined = pd.merge(df_home_means_years_combined, df_away_means_years_combined, on='driverId', how='left', suffixes=('_mean_home', '_mean_away'))
         
         #merge both means into drivers
-        df_driver_means = pd.merge(all_means, self.cleaned_drivers, on='driverId', how='left')
-        stat_printer.print_basic_stats(home_means['position_result'],'home_means')
-        stat_printer.print_basic_stats(away_means['position_result'],'away_means')
-        t_score, p_val = stat_printer.print_t_test_ind(home_means['position_result'], away_means['position_result'], 'home and away means')
+        df_driver_means = pd.merge(df_all_means_for_years_combined, self.cleaned_drivers, on='driverId', how='left')
+
+        stat_printer.print_basic_stats(df_home_means_years_combined['position_result'],'home_means for ALL YEARS combined')
+        stat_printer.print_basic_stats(df_away_means_years_combined['position_result'],'away_means')
+        t_score, p_val = stat_printer.print_t_test_ind(df_home_means_years_combined['position_result'], 
+                df_away_means_years_combined['position_result'], 'home and away means for ALL YEARS combined')
         
         #ratio of home_mean to away _mean - so above 1 is better at home below 1 is better away
         df_driver_means['home_away_ratio'] = df_driver_means['position_result_mean_home']/df_driver_means['position_result_mean_away']
+        breakpoint()
+        return df_driver_means, t_score, p_val
 
-        return all_means, df_driver_means, t_score, p_val
+    def filter_results_by_year(self, start_year, end_year):
+        '''
+        Returns all rows from cleaned master DataFrame for specified year interval
+        '''
+        mask_time_interval = (self.df_all['year_race'] >= start_year) & (self.df_all['year_race'] <= end_year)
+
+        return self.df_all[mask_time_interval]
+
+    def calc_home_adv_for_all_data(self):
+        start_year = self.cleaned_races['year_race'].min()
+        end_year = self.cleaned_races['year_race'].max()
+
+        df = self.filter_results_by_year(start_year, end_year)
+        return self.calculate_home_advantage(df)
+
+    def calculate_driver_ratios_by_season(self, driver_id_list, start_year, end_year):
+        '''
+        Defaults to include the data for all years and all drivers
+        Attributes
+        ----------
+        driver_id_list : list of ints
+            Driver ids to include in search
+        start_year : int
+            Minimum year value for query
+        end_year : int
+            Maximum year value for query
+
+        Returns
+        -------
+        t_test_results - dictionary
+            key: season year
+            value: tuple of (t-score, p-val) of that season year
+        '''
+        if start_year < self.cleaned_races['year_race'].min():
+            raise Exception("The starting year chosen is before the earliest data that exists.")
+
+        if end_year > self.cleaned_races['year_race'].max():
+            raise Exception("The ending year chosen is before the latest data that exists.")
+
+        #seasons_means_for_drivers = []
+
+        # filter for for specified time interval
+        df_filtered_seasons_results = self.filter_results_by_year(start_year, end_year)
+        
+        # filter for the specified drivers
+        mask_driver_list = df_filtered_seasons_results['driverId'].isin(driver_id_list)
+        df_filtered_seasons_results[mask_driver_list]
+
+        # for each season year, get home/away result means and ratio
+        # since we add 1 to the year in the call to filter_results_by_year, don't add 1 when setting the range for the loop
+        #for year in range(start_year, end_year):
+        #    df_season = self.filter_results_by_year(year, year+1)
+
+        # get results for the time and driver conditions
+        df_driver_means, t_score, p_val = self.calculate_home_advantage(df_filtered_seasons_results)
+
+        # 
+        
 
     def show_driver_country_vertical(self):
         dr_country = self.cleaned_drivers['nationality_driver'].value_counts().to_frame()
@@ -349,15 +397,15 @@ class F1Home:
         plt.tight_layout()
         #plt.show()
 
-    def show_drivers_average_means(self, all_means, color_list=[]):
+    def show_drivers_average_means(self, df_driver_means, color_list=[]):
         #bar chart of avg pos(y ax) of home and away (x ax)
-        values = [all_means['position_result_mean_home'].mean(), all_means['position_result_mean_away'].mean()]
+        values = [df_driver_means['position_result_mean_home'].mean(), df_driver_means['position_result_mean_away'].mean()]
         self.print_bar_chart(y_data=values,title='''Driver's Average Means''',y_label='Average Finishing Position',
             x_data=['Home', 'Away'], make_x_ticks=True, saveFigName="AvgDriverMeans.png", color_list=color_list)
     
-    def show_home_away_comp(self, all_means, color_list=[]):
+    def show_home_away_comp(self, df_driver_means, color_list=[]):
         #bar chart of num of drivers (y) with home advantage and without home ad (x)
-        values = [all_means['position_result_mean_home'].count(), all_means['position_result_mean_away'].count()]
+        values = [df_driver_means['position_result_mean_home'].count(), df_driver_means['position_result_mean_away'].count()]
         self.print_bar_chart(y_data=values,title='Number of Drivers Who Have Home Advantage',y_label='Number of Drivers',
             x_data=['Advantage', 'No Advantage'], make_x_ticks=True, saveFigName="DriverAdvantageCounts.png", color_list=color_list)
 
@@ -408,17 +456,17 @@ if __name__ == '__main__':
     f_one.apply_data_cleaning()
     f_one.save_csvs(False)
 
-    all_result_means, _all_driver_home_ratio, t_score, p_val = f_one.calculate_home_advantage()
+    df_all_driver_home_ratio, t_score, p_val = f_one.calc_home_adv_for_all_data()
 
     plt.style.use('seaborn-deep')
     # Visualizations
     color_list=['grey', 'green']
     # f_one.show_driver_countries()
     # f_one.show_drivers_with_home_race_pie()
-    # f_one.show_drivers_average_means(all_result_means)
-    # f_one.show_home_away_comp(all_result_means)
-    # f_one.show_home_away_ratio(_all_driver_home_ratio)
-    #f_one.show_driver_country_pretty()
+    # f_one.show_drivers_average_means(df_all_driver_home_ratio)
+    # f_one.show_home_away_comp(df_all_driver_home_ratio)
+    # f_one.show_home_away_ratio(df_all_driver_home_ratio)
+    # f_one.show_driver_country_pretty()
     plt.show()
 
     # Info printed to terminal
