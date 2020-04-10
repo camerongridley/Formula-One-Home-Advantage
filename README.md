@@ -43,9 +43,11 @@ home = driver's designated home country matched the country the race circuit was
 
 ## Hypothesis
 
-Ho: Average Finishing Position at Home = Average Finishing Position Away
+Remember, **a lower finishing position is better**
 
-Ha: Average Finishing Position at Home > Average Finishing Position Away
+​	Ho: Average Finishing Position at Home = Average Finishing Position Away
+
+​	Ha: Average Finishing Position at Home < Average Finishing Position Away	
 
 
 
@@ -89,7 +91,7 @@ t-test (ind) for home and away means:
 
 Comparison of the ratio of drivers' finishing position at 'home' vs their finishing position 'away' produces the Home/Away Ratio (home race finishing position average / away race finishing position average)
 
-The HAR will be larger than 1 if the average finishing position at home is better than the away average and smaller than 1 if the away average is better
+The HAR will be smaller than 1 if the average finishing position at home is better than the away average and larger than 1 if the away average is better
 
 ![all_results_home_away_ration](img/all_results_home_away_ration.png)
 
