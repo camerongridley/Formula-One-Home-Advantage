@@ -187,7 +187,7 @@ class F1Home:
         df_driver_means_by_year_by_driver : Pandas DataFrame
             average_home_means, average_away_means and home_to_away_ratio results by year by driver
         '''
-        breakpoint
+        
         # select results for only those who finished the race
         df_valid_results = df[df['position_result'] != -1]
         
@@ -226,10 +226,11 @@ class F1Home:
         #ratio of home_mean to away _mean for combined years - so above 1 is better at home below 1 is better away
         df_driver_means_years_combined['home_away_ratio'] = df_driver_means_years_combined['position_result_mean_home']/df_driver_means_years_combined['position_result_mean_away']
 
+        #breakpoint()
         #calculate means per season
         ########################################################################
-        df_home_means_by_year_by_driver = df_home_races.groupby(['year_race', 'driverId'])['position_result'].mean().reset_index()
-        df_away_means_by_year_by_driver = df_away_races.groupby(['year_race', 'driverId'])['position_result'].mean().reset_index()
+        df_home_means_by_year_by_driver = df_home_races.groupby(['driverId', 'year_race'])['position_result'].mean().reset_index()
+        df_away_means_by_year_by_driver = df_away_races.groupby(['driverId', 'year_race'])['position_result'].mean().reset_index()
 
         #merge means for combined years
         df_all_means_by_year_by_driver = pd.merge(df_home_means_by_year_by_driver, df_away_means_by_year_by_driver, on='driverId', how='left', suffixes=('_mean_home', '_mean_away'))
@@ -257,7 +258,7 @@ class F1Home:
         '''
         #find all driverIds for races in the year interval
         mask_time_interval = (self.df_all['year_race'] >= start_year) & (self.df_all['year_race'] <= end_year)
-        breakpoint()
+        
         driver_id_list = self.df_all[mask_time_interval]['driverId'].tolist()
 
         #with that list of driverIds, do a isin(driverIDList) to get all results to be used for calculation
@@ -302,7 +303,9 @@ class F1Home:
 
         if end_year > self.cleaned_races['year_race'].max():
             raise Exception("The ending year chosen is before the latest data that exists.")
-
+        
+        breakpoint()
+        
         # filter for for specified time interval
         df_filtered_seasons_results = self.filter_results_by_year(start_year, end_year, include_all_driver_years=True)
 
@@ -317,19 +320,20 @@ class F1Home:
         return df_driver_means_years_combined, t_score_years_combined, p_val_years_combined, df_driver_means_by_year_by_driver
 
     def end_user_all_most_wins(self):
-        mask_wins = self.df_all['position_result'] == 1
-        df_most_wins = self.df_all[mask_wins].groupby('driverId').sum()['position_result'].sort_values(ascending=False).head(10)
-
-        breakpoint()
+        # mask_wins = self.df_all['position_result'] == 1
+        # df_most_wins = self.df_all[mask_wins].groupby('driverId').sum()['position_result'].sort_values(ascending=False).head(10)
+        pass
 
     def end_user_most_recent_grid(self):
         #get most recent year
-        most_recent_year = self.cleaned_races['year_race'].max()
+        #need to update so dynamically gets year. right now it has race dates for future races that have no results data
+        #need to join dataframes for this and I am running out of time!
+        most_recent_year = 2019#self.cleaned_races['year_race'].max()
 
         #get all results for most recent year
         df_recent_year_results = self.df_all[self.df_all['year_race'] == most_recent_year]
 
-        self.end_user_driver_ratios_by_season
+        return self.end_user_driver_ratios_by_season(most_recent_year,most_recent_year)
 
 
     def show_driver_country_vertical(self):
@@ -340,14 +344,14 @@ class F1Home:
         #plt.show()
 
     def show_driver_countries(self):
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=(10, 15))
             country_names_dict = self.cleaned_drivers['country_driver'].value_counts().to_dict()
             countries = list(country_names_dict.values())
             y_pos = np.arange(len(country_names_dict))
 
-            ax.barh(y_pos, countries, align='center')
+            ax.barh(y_pos, countries, height=.8, align='center')
             ax.set_yticks((y_pos))
-            ax.set_yticklabels(country_names_dict.keys())
+            ax.set_yticklabels(country_names_dict.keys(), fontsize=16)
             ax.invert_yaxis() # labels read top-to-bottom
             ax.set_xlabel('Drivers')
             ax.set_title('Number of Drivers Per Country')
@@ -454,15 +458,16 @@ class F1Home:
     
     def show_home_away_comp(self, df_driver_means, color_list=[]):
         #bar chart of num of drivers (y) with home advantage and without home ad (x)
-        values = [df_driver_means['position_result_mean_home'].count(), df_driver_means['position_result_mean_away'].count()]
+        values = [df_driver_means[df_driver_means['home_away_ratio'] > 1]['home_away_ratio'].count(), 
+            df_driver_means[df_driver_means['home_away_ratio'] < 1]['home_away_ratio'].count()]
         self.print_bar_chart(y_data=values,title='Number of Drivers Who Have Home Advantage',y_label='Number of Drivers',
-            x_data=['Advantage', 'No Advantage'], make_x_ticks=True, saveFigName="DriverAdvantageCounts.png", color_list=color_list)
+            x_data=['Better At Home', 'Better Away'], make_x_ticks=True, saveFigName="DriverAdvantageCounts.png", color_list=color_list)
 
-    def show_home_away_ratio(self, driver_means):
+    def show_home_away_ratio(self, df_driver_means):
         # histogram of home/away ratio
         fig = plt.figure(figsize=(10, 6))
         ax = fig.add_subplot(111)
-        ax.hist(driver_means['home_away_ratio'], bins=80, alpha=1)
+        ax.hist(df_driver_means['home_away_ratio'], bins=80, alpha=1)
         ax.set_title('Ratio of Home/Away Finishing Positions')
         ax.set_xlabel('Home/Away Avgerage Ratio')
         ax.set_ylabel('Number of Drivers')
@@ -505,23 +510,26 @@ if __name__ == '__main__':
     f_one.apply_data_cleaning()
     f_one.save_csvs(False)
 
+    plt.style.use('seaborn-deep')
+
     df_driver_means_years_combined, t_score, p_val, df_driver_means_by_year_by_driver = f_one.end_user_home_adv_for_all_data()
 
-    plt.style.use('seaborn-deep')
     # Visualizations
     color_list=['grey', 'green']
     # f_one.show_driver_countries()
     # f_one.show_drivers_with_home_race_pie()
     # f_one.show_drivers_average_means(df_driver_means_years_combined)
-    # f_one.show_home_away_comp(df_driver_means_years_combined)
+    f_one.show_home_away_comp(df_driver_means_years_combined)
     # f_one.show_home_away_ratio(df_driver_means_years_combined)
     # f_one.show_driver_country_pretty()
     # plt.show()
 
     # Info printed to terminal
     f_one.print_wins_per_construtor()
+    avgHAR = df_driver_means_years_combined['home_away_ratio'].mean()
+    print(f'Years Combined Average HAR: {avgHAR}')
 
-    #f_one.end_user_all_most_wins()
+    #f_one.end_user_most_recent_grid()
     
 
 
