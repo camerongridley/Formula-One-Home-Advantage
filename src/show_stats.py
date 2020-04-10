@@ -14,3 +14,4 @@ class ShowStats:
     def print_t_test_ind(self, a, b, data_label='data'):
         t_score, p = stats.ttest_ind(a,b)
         print(f't-test (ind) for {data_label}: p={np.round(p, 3)}, t_score={np.round(t_score, 3)}')
+        return t_score, p
