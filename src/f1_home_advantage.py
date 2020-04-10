@@ -396,31 +396,3 @@ if __name__ == '__main__':
 
     # Info printed to terminal
     f_one.show_wins_per_construtor()
-
-    
-
-
-
-    # ''' **********************************************************
-    # ANALYSIS
-    # ********************************************************** '''
-    # #REMINDER : mask - grouby - agg - col selection - sort
-
-    
-    # '''
-    # HYPOTH 1 - Comparing 'home' wins to 'away' wins
-    # How to organize this data? Have to exclude drivers who don't have a race in their home country.
-    # What will my axes be?  x: probability of winning?
-    # Plots wanted:
-    # 1) bar chart? for all (current ?) drivers, regardless of year - binomial choice 0 = position/avg perf <= agv pos for all their races; 1 = position/avg perf > agv
-    #     1A) for Bayesian Testing - Distribution A = 'home', Distribution B = away
-    # 2) line plot - Average for all drivers across all seasons - single plot
-    # 3) Per driver across all seasons participated in - 1 plot per driver
-    # 4) Per driver per season - does the relationship change at all over time? 1 plot per driver per season
-
-    # Per seasons over time for all drivers combined - plot per season they competed
-    # --- Query : will need to groupby Year, then Driver
-    # 3) All seasons driver particpated in - single plot
-    # '''
-
-    
