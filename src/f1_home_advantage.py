@@ -187,7 +187,7 @@ class F1Home:
         df_driver_means_by_year_by_driver : Pandas DataFrame
             average_home_means, average_away_means and home_to_away_ratio results by year by driver
         '''
-        
+
         # select results for only those who finished the race
         df_valid_results = df[df['position_result'] != -1]
         
@@ -227,7 +227,7 @@ class F1Home:
         #ratio of home_mean to away _mean for combined years - so above 1 is better at home below 1 is better away
         df_driver_means_years_combined['home_away_ratio'] = df_driver_means_years_combined['position_result_mean_home']/df_driver_means_years_combined['position_result_mean_away']
 
-        breakpoint()
+        
         #calculate means per season
         ########################################################################
         df_home_means_by_year_by_driver = df_home_races.groupby(['driverId', 'year_race'])['position_result'].mean().reset_index()
@@ -242,6 +242,9 @@ class F1Home:
         #ratio of home_mean to away _mean for season years
         df_driver_means_by_year_by_driver['home_away_ratio'] = df_driver_means_by_year_by_driver['position_result_mean_home']/df_driver_means_by_year_by_driver['position_result_mean_away']
         ##################################################################
+
+        df_driver_means_years_combined.to_csv('../output/df_driver_means_years_combined.csv')
+        df_driver_means_by_year_by_driver.to_csv('../output/df_driver_means_by_year_by_driver.csv')
 
         return df_driver_means_years_combined, t_score_years_combined, p_val_years_combined, df_driver_means_by_year_by_driver
 
@@ -316,7 +319,7 @@ class F1Home:
 
         # get results for the time and driver conditions
         df_driver_means_years_combined, t_score_years_combined, p_val_years_combined, df_driver_means_by_year_by_driver = self.calculate_home_advantage(df_filtered_seasons_results)
-        breakpoint()
+
         return df_driver_means_years_combined, t_score_years_combined, p_val_years_combined, df_driver_means_by_year_by_driver
 
     def end_user_all_most_wins(self):
@@ -491,6 +494,20 @@ class F1Home:
         # all in one line
         #wins_by_constructor = self.df_all[(mask_wins)].groupby(['name_constr']).sum()[['position_result', 'points_result']].sort_values(by=['points_result'], ascending=False)
 
+    def print_driver_ratio_per_year(self, df):
+        grp = df.groupby(['driverId', 'year_race_mean_home'])
+        ham_ratio = grp[grp['driverId'] == 1]
+        for name, g in grp.groups:
+            print(f'name: {name}')
+            print(f'group {g}')
+
+    def ham_2019(self):
+        mask_ham = self.df_all['driverId'].isin([1])
+        mask_year = self.df_all['year_race'] == 2019
+        df_ham = self.df_all[mask_ham & mask_year][['surname_driver', 'date_race', 'position_result']].sort_values('date_race')
+        
+        fig, axes = plt.subplots()
+        axes.plot(df_ham['date_race'], df_ham['position_result'])
 
         
     
@@ -523,22 +540,25 @@ if __name__ == '__main__':
     color_list=['grey', 'green']
     #f_one.show_driver_countries()
     #f_one.show_drivers_with_home_race_pie()
-    f_one.show_drivers_average_means(df_driver_means_years_combined, 'All Years')
-    f_one.show_home_away_comp(df_driver_means_years_combined, 'All Years')
+    # f_one.show_drivers_average_means(df_driver_means_years_combined, 'All Years')
+    # f_one.show_home_away_comp(df_driver_means_years_combined, 'All Years')
     #f_one.show_home_away_ratio(df_driver_means_years_combined, 'All Years')
     # f_one.show_driver_country_pretty()
     
 
     # By Season
-    # df_driver_means_years_combined, t_score_years_combined, p_val_years_combined, df_driver_means_by_year_by_driver = f_one.end_user_most_recent_grid() 
+    # df_driver_means_years_combined, t_score_years_combined, p_val_years_combined, df_driver_means_by_year_by_driver = f_one.end_user_most_recent_grid()
+    # f_one.print_driver_ratio_per_year(df_driver_means_by_year_by_driver)
     # f_one.show_drivers_average_means(df_driver_means_years_combined, '2019 Grid')
     # f_one.show_home_away_comp(df_driver_means_years_combined, '2019 Grid')
     # f_one.show_home_away_ratio(df_driver_means_years_combined, '2019 Grid')
 
     # Info printed to terminal
-    f_one.print_wins_per_construtor()
-    avgHAR = df_driver_means_years_combined['home_away_ratio'].mean()
-    print(f'Years Combined Average HAR: {avgHAR}')
-    print(f_one.df_all.corr())
+    #f_one.print_wins_per_construtor()
+    #avgHAR = df_driver_means_years_combined['home_away_ratio'].mean()
+    #print(f'Years Combined Average HAR: {avgHAR}')
+    #print(f_one.df_all.corr())
    
+    f_one.ham_2019()
+
     plt.show()
