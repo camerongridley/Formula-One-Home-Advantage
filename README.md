@@ -9,7 +9,7 @@ Furthermore, as athletes practice and compete over and over again in the same pl
 
 The confidence boost received from fan support during competition that can inspire and energize the athletes to better performance is another core element of the home field advantage. This project explores the question of whether the idea of a "home-field advantage" occurs in Formula 1 racing. Uses Python, Pandas, Numpy and MatPlotLib.
 
-<img src="/home/cgridley/Galvanize/repos/capstones/Formula-One-Home-Advantage/img/readme/max_with_crowd.png" alt="max_with_crowd" style="zoom:40%;" /><img src="/home/cgridley/Galvanize/repos/capstones/Formula-One-Home-Advantage/img/readme/hamilton_wc_at_silverstone.jpg" alt="hamilton_wc_at_silverstone" style="zoom:50%;" />
+<img src="img/readme/max_with_crowd.png" alt="max_with_crowd" style="zoom:40%;" /><img src="img/readme/hamilton_wc_at_silverstone.jpg" alt="hamilton_wc_at_silverstone" style="zoom:50%;" />
 
 
 Most major sports have ample opportunity to cultivate the home field advantage.![other_sports_games](img/readme/other_sports_games.png)
@@ -115,11 +115,11 @@ Home Advantage Results for Years 2001 to 2019 having 1,512 rows
 **Variance** of the average finishing result **away** - 9.94
 **Standard Deviation** of the average finishing result **away** - 8.98
 
-![DriverAdvantageCounts2019Grid](/home/cgridley/Galvanize/repos/capstones/Formula-One-Home-Advantage/img/DriverAdvantageCounts2019Grid.png)
+![DriverAdvantageCounts2019Grid](img/DriverAdvantageCounts2019Grid.png)
 
 Here we see a staggering difference between the frequency of better finishes away. Again, the high variance shows itself here. This makes sense in light of there being so many more away races and therefore opportunities to place well.
 
-![AvgDriverMeans2019Grid](/home/cgridley/Galvanize/repos/capstones/Formula-One-Home-Advantage/img/AvgDriverMeans2019Grid.png)
+![AvgDriverMeans2019Grid](img/AvgDriverMeans2019Grid.png)
 
 Interestingly, the comparison of finishing position means is not as disparate, yet, the t-test still shows there is no significant difference at an alpha of .05.
 
