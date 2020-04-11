@@ -9,8 +9,12 @@ Furthermore, as athletes practice and compete over and over again in the same pl
 
 The confidence boost received from fan support during competition that can inspire and energize the athletes to better performance is another core element of the home field advantage. This project explores the question of whether the idea of a "home-field advantage" occurs in Formula 1 racing. Uses Python, Pandas, Numpy and MatPlotLib.
 
-<img src="img/readme/max_with_crowd.png" alt="max_with_crowd" style="zoom:40%;" /><img src="img/readme/hamilton_wc_at_silverstone.jpg" alt="hamilton_wc_at_silverstone" style="zoom:50%;" />
-
+<table style="width:100%">
+  <tr>
+    <td><img src="img/readme/max_with_crowd.png" alt="max_with_crowd" style="zoom:40%;" /></td>
+    <td><img src="img/readme/hamilton_wc_at_silverstone.jpg" alt="hamilton_wc_at_silverstone" style="zoom:50%;" /></td>
+  </tr>
+</table> 
 
 Most major sports have ample opportunity to cultivate the home field advantage.![other_sports_games](img/readme/other_sports_games.png)
 
