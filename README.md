@@ -10,7 +10,6 @@ Furthermore, as athletes practice and compete over and over again in the same pl
 The confidence boost received from fan support during competition that can inspire and energize the athletes to better performance is another core element of the home field advantage. This project explores the question of whether the idea of a "home-field advantage" occurs in Formula 1 racing. Uses Python, Pandas, Numpy and MatPlotLib.
 
 <table border="0" style="width:100%">
-  
   <tr>
     <td><img src="img/readme/max_with_crowd.png" alt="max_with_crowd" style="zoom:30%;" /></td>
     <td><img src="img/readme/hamilton_wc_at_silverstone.jpg" alt="hamilton_wc_at_silverstone" style="zoom:50%;" /></td>
@@ -97,7 +96,7 @@ Looking at the count of drivers who, on average, did better at home or better aw
 
 Looking at all drivers across all 1040 races in Formula 1 history, we see that average of the finishing position at a home race is worse at 9.88 as compared to away races which had an average of 9.368. Furthermore, greater variance and standard within the home results highlights it's likelihood of greater fluctuation.
 
-#### t-test
+#### 2 sample t-test 
 
 And finally, when we compare the average home results with the average aways results we see that at an significance level of .05 there is not a significant difference between the two groups. If anything, the difference is going in the direction of an advantage at away races.
 
@@ -128,7 +127,7 @@ Here we see a staggering difference between the frequency of better finishes awa
 
 Interestingly, the comparison of finishing position means is not as disparate, yet, the t-test still shows there is no significant difference at an alpha of .05.
 
-#### t-test
+#### 2 sample t-test 
 
 t-test (ind) for home and away means for 2019 Grid: 
 
