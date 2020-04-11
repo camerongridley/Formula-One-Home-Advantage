@@ -60,8 +60,6 @@ class F1Home:
         self.cleaned_circuits = self.raw_circuits.copy()[circuits_cols]
         self.cleaned_constructor = self.raw_constructor.copy()[constructor_cols]
         self.cleaned_status = self.raw_status.copy()[status_cols]
-        #self.cleaned_constructor_standings = self.raw_constructor_standings[]
-        #self.cleaned_qualify = self.raw_qualify[]
         self.update_cleaned_df_list()
 
     def handle_nulls(self):
@@ -100,13 +98,6 @@ class F1Home:
         self.cleaned_drivers['dob'] = self.cleaned_drivers['dob'].map(lambda x : dt.datetime.strptime(x, d_format))
         self.cleaned_races['date'] = self.cleaned_races['date'].map(lambda x : dt.datetime.strptime(x, d_format))
 
-        #time convertions to datetime.time
-        #cleaned_races['time'] = cleaned_races['time'].map(lambda x : dt.datetime.strptime(x, '%H:%M:%S'))
-
-        #timings - timedelta objs
-
-        #cleaned_result['time'] = cleaned_result['time'].map(lambda x : pd.to_timedelta(x, unit=?))
-        #fastestLapTime
         self.update_cleaned_df_list()
 
     def create_calculated_cols(self):
@@ -134,8 +125,6 @@ class F1Home:
         self.cleaned_drivers.columns = self.cleaned_drivers.columns.map(lambda x: str(x) + '_driver' if str(x)[-2:]!='Id' else str(x))
         self.cleaned_races.columns = self.cleaned_races.columns.map(lambda x: str(x) + '_race' if str(x)[-2:]!='Id' else str(x))
         self.cleaned_constructor.columns = self.cleaned_constructor.columns.map(lambda x: str(x) + '_constr' if str(x)[-2:]!='Id' else str(x))
-        #self.cleaned_status.columns = self.cleaned_status.columns.map(lambda x: str(x) + '_stat' if str(x)[-2:]!='Id' else str(x))
-        #self.cleaned_qualify.columns = self.cleaned_qualify.columns.map(lambda x: str(x) + '_qual' if str(x)[-2:]!='Id' else str(x))
 
         self.update_cleaned_df_list()
 
@@ -150,13 +139,6 @@ class F1Home:
         mg_res_dr_rac_cir_const = pd.merge(mg_res_dr_rac_cir, self.cleaned_constructor, on='constructorId', how='left', suffixes=('', '_constr'))
         #LEFT JOIN Above on Atatus
         self.df_all = pd.merge(mg_res_dr_rac_cir_const, self.cleaned_status, on='statusId', how='left')
-
-        #Check shapes to see if they look right and numer of rows matches between cleaned_results and df_all
-        # print(f'mg_results_driver: {mg_results_driver.shape}')
-        # print(f'mg_race_circuit: {mg_race_circuit.shape}')
-        # print(f'mg_res_dr_rac_cir: {mg_res_dr_rac_cir.shape}')
-        # print(f'mg_res_dr_rac_cir_const: {mg_res_dr_rac_cir_const.shape}')
-        # print(f'df_all: {self.df_all.shape}')
 
     def save_csvs(self, save):
         if save:
@@ -309,12 +291,6 @@ class F1Home:
         # filter for for specified time interval
         df_filtered_seasons_results = self.filter_results_by_year(start_year, end_year, include_all_driver_years=True)
         # now we have a df of all driver results in the time interval
-
-
-        # for each season year, get home/away result means and ratio
-        # since we add 1 to the year in the call to filter_results_by_year, don't add 1 when setting the range for the loop
-        #for year in range(start_year, end_year):
-        #    df_season = self.filter_results_by_year(year, year+1)
 
         # get results for the time and driver conditions
         df_driver_means_years_combined, t_score_years_combined, p_val_years_combined, df_driver_means_by_year_by_driver = self.calculate_home_advantage(df_filtered_seasons_results)
